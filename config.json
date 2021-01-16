@@ -1,0 +1,15 @@
+{
+  "agencies": [
+    {
+      "agency_key": "patco",
+      "url": "http://www.ridepatco.org/developers/PortAuthorityTransitCorporation.zip",
+      "exclude": [
+        "shapes"
+      ]
+    }
+  ],
+  "csvOptions": {
+    "skip_lines_with_error": true
+  },
+  "sqlitePath": "./gtfs"
+}
