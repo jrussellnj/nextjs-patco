@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "next start",
-    "hello": "node server.js"
+    "start": "next start"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
