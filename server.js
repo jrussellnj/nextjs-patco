@@ -17,8 +17,11 @@ app.prepare().then(() => {
   server.use(bodyParser.urlencoded({ extended: true }))
   server.use(bodyParser.json())
 
+  // Endpoint for retriving stop times for a given station
   server.get('/get-stop-times/:station_slug', async (req, res) => {
     const db = await gtfs.openDb(config);
+
+    console.log("-- req.params", req.params)
 
     // Get the station slug from request
     const the_station = await gtfs.getStops({
@@ -36,7 +39,7 @@ app.prepare().then(() => {
 
     const trip_ids = trips.map(o => o['trip_id']);
 
-    console.log("trip_ids", trip_ids)
+    // console.log("trip_ids", trip_ids)
 
     // Get the stop times for the requested station
     const a = await gtfs.getStoptimes({
@@ -45,7 +48,7 @@ app.prepare().then(() => {
     });
 
     const departure_times = a.map(o => o['departure_time'])
-    console.log("departure_times", departure_times)
+    // console.log("departure_times", departure_times)
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(departure_times));
