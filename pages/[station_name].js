@@ -1,14 +1,21 @@
 import { useRouter } from 'next/router'
+import moment from 'moment'
 
 function Station({ stopTimes }) {
   const router = useRouter()
   const { station_name } = router.query
 
   console.log("-- stop data", stopTimes)
+
+  stopTimes = stopTimes.map((time) =>
+    <div key={time}>{moment(time, 'HH:mm:ss').format('h:mm A')}</div>
+  )
+
+  // TODO: Orgranize in directions, not just simply all the stops
+
   return (
     <>
-      <h1>{ station_name }</h1>
-
+      <div>The next trains departing from: { station_name }</div>
       <div>{ stopTimes }</div>
     </>
   )

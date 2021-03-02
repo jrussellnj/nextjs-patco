@@ -3,7 +3,10 @@ import Link from 'next/link'
 function HomePage() {
   return (
     <div>
-      Welcome to Next.js!
+      <header>
+        Next PATCO
+      </header>
+
       <Link href="/collingswood">
         <a>Collingswood</a>
       </Link>

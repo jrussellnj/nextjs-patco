@@ -32,10 +32,15 @@ app.prepare().then(() => {
     const calendar = await gtfs.getCalendars();
     const todays_service = calendar.filter(o => moment().isBetween(String(o['start_date']), String(o['end_date'])) && o[moment().format('dddd').toLowerCase()] == 1)
 
+    console.log("--- service id", todays_service, todays_service[0]['service_id'])
+
     // Get all trips for the service ID
     const trips = await gtfs.getTrips({
-      service_id: todays_service[0]['service_id']
+      service_id: todays_service[0]['service_id'] //,
+      // route_id: 1  // 1 is Lindenwold, 2 is Philadelphia
     })
+
+    console.log("-- raw trips", trips[0])
 
     const trip_ids = trips.map(o => o['trip_id']);
 
