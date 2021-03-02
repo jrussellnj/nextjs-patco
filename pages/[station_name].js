@@ -24,7 +24,7 @@ function Station({ stopTimes }) {
 // Get the departures for the given station
 export async function getServerSideProps(context) {
 
-  let stopTimes = null
+  let stopTimes = []
   const acceptableStationSlugs = [
     'lindenwold',
     'ashland',
