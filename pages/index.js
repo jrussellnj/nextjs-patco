@@ -28,7 +28,7 @@ function HomePage() {
     },
     {
       'name': 'Ferry Avenue',
-      'slug': 'ferry-ave'
+      'slug': 'ferry-avenue'
     },
     {
       'name': 'Broadway',
@@ -58,7 +58,7 @@ function HomePage() {
 
   const stationLinks = stations.map((station) =>
     <div key={station.slug}>
-      <Link href={ '/' + station.slug}>
+      <Link href={ '/s/' + station.slug}>
         <a>{ station.name }</a>
       </Link>
     </div>

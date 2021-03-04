@@ -21,42 +21,49 @@ app.prepare().then(() => {
   server.get('/get-stop-times/:station_slug', async (req, res) => {
     const db = await gtfs.openDb(config);
 
-    console.log("-- req.params", req.params)
-
     // Get the station slug from request
-    const the_station = await gtfs.getStops({
+    const station = await gtfs.getStops({
       slug: req.params.station_slug
     })
 
     // Get the service ID for the current day and time at the given station
     const calendar = await gtfs.getCalendars();
-    const todays_service = calendar.filter(o => moment().isBetween(String(o['start_date']), String(o['end_date'])) && o[moment().format('dddd').toLowerCase()] == 1)
+    const todays_service = calendar.filter(service =>
+      moment().isBetween(String(service['start_date']), String(service['end_date'])) &&
+      service[moment().format('dddd').toLowerCase()] == 1
+    )
 
-    console.log("--- service id", todays_service, todays_service[0]['service_id'])
+    const serviceIds = [
+      1, // to Lindenwold
+      2 // to Philadelphia
+    ]
 
-    // Get all trips for the service ID
-    const trips = await gtfs.getTrips({
-      service_id: todays_service[0]['service_id'] //,
-      // route_id: 1  // 1 is Lindenwold, 2 is Philadelphia
-    })
+    let departureTimes = []
+    const rightNow = moment()
 
-    console.log("-- raw trips", trips[0])
+    for (i in serviceIds) {
+      const thisServiceId = serviceIds[i]
 
-    const trip_ids = trips.map(o => o['trip_id']);
+      // Get trips for the given route and service IDs
+      const trips = await gtfs.getTrips({
+        service_id: todays_service[0]['service_id'],
+        route_id: thisServiceId
+      })
 
-    // console.log("trip_ids", trip_ids)
+      const trip_ids = trips.map(o => o['trip_id']);
 
-    // Get the stop times for the requested station
-    const a = await gtfs.getStoptimes({
-      trip_id: trip_ids,
-      stop_id: the_station[0]['stop_id']
-    });
+      // Get the stop times for the requested station
+      const stopTimes = await gtfs.getStoptimes({
+        trip_id: trip_ids,
+        stop_id: station[0]['stop_id']
+      });
 
-    const departure_times = a.map(o => o['departure_time'])
-    // console.log("departure_times", departure_times)
+      departureTimes[thisServiceId] = stopTimes.map(o => o['departure_time'])
+      departureTimes[thisServiceId] = departureTimes[thisServiceId].filter(d => moment(d, 'HH:mm:ss') > rightNow)
+    }
 
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(departure_times));
+    res.end(JSON.stringify(departureTimes));
   })
 
   server.all('*', (req, res) => {
