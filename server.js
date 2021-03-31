@@ -39,10 +39,11 @@ app.prepare().then(() => {
     ]
 
     let departureTimes = []
-    const rightNow = moment()
+    const rightNow = moment() // ('08:00:00', 'HH:mm:ss')
 
     for (i in serviceIds) {
       const thisServiceId = serviceIds[i]
+      departureTimes[thisServiceId] = []
 
       // Get trips for the given route and service IDs
       const trips = await gtfs.getTrips({
@@ -51,14 +52,46 @@ app.prepare().then(() => {
       })
 
       const trip_ids = trips.map(o => o['trip_id']);
+      const stop_id = station[0]['stop_id']
 
       // Get the stop times for the requested station
       const stopTimes = await gtfs.getStoptimes({
         trip_id: trip_ids,
-        stop_id: station[0]['stop_id']
+        stop_id: stop_id
       });
 
-      departureTimes[thisServiceId] = stopTimes.map(o => o['departure_time'])
+      // Get any frequencies for the trip_ids above
+      const freqs = await gtfs.getFrequencies({
+        trip_id: trip_ids
+      });
+
+      for (i in freqs) {
+        const { trip_id, start_time, end_time, headway_secs } = freqs[i]
+        const start = moment(start_time,'HH:mm:ss')
+        const end = moment(end_time,'HH:mm:ss')
+
+        let calculatedFrequency = start
+        let freqstarts = []
+
+        // Figure out the offset in seconds from the trip origin for this station
+        const kickoffTrip = await gtfs.getStoptimes({
+          trip_id: trip_id
+        })
+
+        const stationOffsetInSeconds = kickoffTrip.filter(t => t['stop_id'] == stop_id)[0]['departure_timestamp'] - kickoffTrip.filter(t => t['stop_sequence'] == 1)[0]['departure_timestamp']
+
+        // Advance the start by the calculated station offset, if needed
+        calculatedFrequency = calculatedFrequency.add(stationOffsetInSeconds, 'seconds')
+
+        while (calculatedFrequency < end) {
+          calculatedFrequency = calculatedFrequency.add(headway_secs, 'seconds')
+          freqstarts.push(calculatedFrequency.format('HH:mm:ss'))
+        }
+
+        departureTimes[thisServiceId] =departureTimes[thisServiceId].concat(freqstarts)
+      }
+
+      departureTimes[thisServiceId] = departureTimes[thisServiceId].concat(stopTimes.map(o => o['departure_time'])).sort()
       departureTimes[thisServiceId] = departureTimes[thisServiceId].filter(d => moment(d, 'HH:mm:ss') > rightNow)
     }
 
