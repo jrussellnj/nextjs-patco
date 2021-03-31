@@ -39,7 +39,7 @@ app.prepare().then(() => {
     ]
 
     let departureTimes = []
-    const rightNow = moment() // ('08:00:00', 'HH:mm:ss')
+    const rightNow = moment().subtract(60, 'seconds')
 
     for (i in serviceIds) {
       const thisServiceId = serviceIds[i]
